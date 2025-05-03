@@ -1,0 +1,81 @@
+# Install necessary packages
+!pip install -q wordcloud nltk
+
+# Import libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+import nltk
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import CountVectorizer
+from collections import Counter
+import seaborn as sns
+
+# Download NLTK stopwords
+nltk.download('stopwords')
+
+# Load dataset (replace filename with actual Yelp review file e.g. yelp_review.csv)
+df = pd.read_json('/content/yelp_academic_dataset_review.json', lines=True)
+
+# Optional: Reduce to restaurant reviews using business dataset (if available)
+# For now, proceed with all reviews
+# If needed: merge with yelp_academic_dataset_business.json to filter "Restaurants"
+
+# Take a small sample if full dataset is too large
+df = df.sample(10000, random_state=1)
+
+# Clean and preprocess
+stop_words = set(stopwords.words('english'))
+
+def preprocess(text):
+    tokens = text.lower().split()
+    return ' '.join([word for word in tokens if word.isalpha() and word not in stop_words])
+
+df['clean_text'] = df['text'].apply(preprocess)
+
+# ------------------------------------------
+# 1. WORD CLOUD
+# ------------------------------------------
+text_combined = ' '.join(df['clean_text'])
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text_combined)
+
+plt.figure(figsize=(12, 6))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.title("Word Cloud of Yelp Reviews")
+plt.show()
+
+# ------------------------------------------
+# 2. N-GRAM ANALYSIS
+# ------------------------------------------
+
+# Bigrams and Trigrams
+def get_top_ngrams(corpus, ngram_range=(2,2), n=None):
+    vec = CountVectorizer(ngram_range=ngram_range, stop_words='english').fit(corpus)
+    bag_of_words = vec.transform(corpus)
+    sum_words = bag_of_words.sum(axis=0)
+    words_freq = [(word, sum_words[0, idx]) for word, idx in vec.vocabulary_.items()]
+    words_freq = sorted(words_freq, key=lambda x: x[1], reverse=True)
+    return words_freq[:n]
+
+# Show top 15 bigrams
+top_bigrams = get_top_ngrams(df['clean_text'], ngram_range=(2,2), n=15)
+top_trigrams = get_top_ngrams(df['clean_text'], ngram_range=(3,3), n=15)
+
+# Plot bigrams
+bigrams_df = pd.DataFrame(top_bigrams, columns=['ngram', 'count'])
+plt.figure(figsize=(10,6))
+sns.barplot(data=bigrams_df, y='ngram', x='count', palette='Reds_r')
+plt.title("Top 15 Bigrams in Yelp Reviews")
+plt.xlabel("Frequency")
+plt.ylabel("Bigram")
+plt.show()
+
+# Plot trigrams
+trigrams_df = pd.DataFrame(top_trigrams, columns=['ngram', 'count'])
+plt.figure(figsize=(10,6))
+sns.barplot(data=trigrams_df, y='ngram', x='count', palette='Blues_r')
+plt.title("Top 15 Trigrams in Yelp Reviews")
+plt.xlabel("Frequency")
+plt.ylabel("Trigram")
+plt.show()
