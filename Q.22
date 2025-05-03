@@ -1,0 +1,71 @@
+Here’s a simple and practical way to calculate degree, closeness, and eigenvector centrality using the Facebook social circles dataset from SNAP.
+
+✅ Step-by-step: Centrality Analysis of Facebook Social Graph
+📦 Dataset: ego-Facebook (SNAP)
+📁 Use the file: facebook_combined.txt (undirected edge list)
+
+🔧 Step 1: Load Dataset and Create Graph
+python
+Copy
+Edit
+import networkx as nx
+import matplotlib.pyplot as plt
+
+# Load edge list
+G = nx.read_edgelist('/content/facebook_combined.txt')  # path to your downloaded file
+
+# Basic info
+print("Nodes:", G.number_of_nodes())
+print("Edges:", G.number_of_edges())
+📈 Step 2: Centrality Calculations
+python
+Copy
+Edit
+# Degree Centrality
+deg_cent = nx.degree_centrality(G)
+
+# Closeness Centrality
+clo_cent = nx.closeness_centrality(G)
+
+# Eigenvector Centrality
+eig_cent = nx.eigenvector_centrality(G, max_iter=1000)
+
+# Create a DataFrame for top 10 nodes
+import pandas as pd
+centrality_df = pd.DataFrame({
+    'Node': list(deg_cent.keys()),
+    'Degree': list(deg_cent.values()),
+    'Closeness': list(clo_cent.values()),
+    'Eigenvector': list(eig_cent.values())
+})
+
+top10 = centrality_df.sort_values(by='Eigenvector', ascending=False).head(10)
+print(top10)
+📊 Step 3: Visualize the Graph with Node Centrality
+python
+Copy
+Edit
+# Visualize with node size proportional to eigenvector centrality
+plt.figure(figsize=(10, 7))
+pos = nx.spring_layout(G, seed=42)
+node_size = [eig_cent[node]*5000 for node in G.nodes()]
+
+nx.draw_networkx(G, pos, with_labels=False, node_size=node_size, node_color='skyblue', edge_color='gray')
+plt.title("Facebook Social Graph - Node Size by Eigenvector Centrality")
+plt.axis('off')
+plt.show()
+📌 Interpretation of Centrality Measures
+Centrality Type	What It Measures	Interpretation
+Degree Centrality	# of direct connections (edges)	High value = well-connected user
+Closeness Centrality	How close a node is to all others	High value = user can quickly spread information
+Eigenvector Centrality	Influence based on connections to other influential nodes	High value = connected to other powerful users (key influencers)
+
+🔍 Example Insight
+If a node (say user 343) has:
+
+High degree → They have many friends
+
+High closeness → They can reach others quickly
+
+High eigenvector → They’re influential within highly connected groups
+
