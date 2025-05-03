@@ -1,0 +1,40 @@
+# Step 1: Install and import libraries
+!pip install vaderSentiment --quiet
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+# Step 2: Load dataset
+df = pd.read_csv("Amazon_Product_Reviews.csv")  # Adjust filename as needed
+
+# Step 3: Drop missing and clean up
+df = df.dropna(subset=['reviews.text'])
+df = df.head(1000)  # Limit for faster runtime
+
+# Step 4: Apply VADER Sentiment Analysis
+analyzer = SentimentIntensityAnalyzer()
+
+def get_sentiment(text):
+    score = analyzer.polarity_scores(text)['compound']
+    if score >= 0.05:
+        return 'Positive'
+    elif score <= -0.05:
+        return 'Negative'
+    else:
+        return 'Neutral'
+
+df['Sentiment'] = df['reviews.text'].apply(get_sentiment)
+
+# Step 5: Visualize sentiment distribution
+sentiment_counts = df['Sentiment'].value_counts()
+
+plt.figure(figsize=(6, 4))
+sentiment_counts.plot(kind='bar', color=['green', 'gray', 'red'])
+plt.title("Amazon Product Review Sentiment Distribution")
+plt.xlabel("Sentiment")
+plt.ylabel("Number of Reviews")
+plt.xticks(rotation=0)
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.tight_layout()
+plt.show()
