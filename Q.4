@@ -1,0 +1,26 @@
+# Step 1: Import required libraries
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Step 2: Load the dataset
+df = pd.read_csv("LinkedIn Job Dataset.csv")  # Adjust filename if needed
+
+# Step 3: Select and clean job description text
+df = df.dropna(subset=["Description"])
+descriptions = df["Description"].astype(str).tolist()
+
+# Step 4: Use TF-IDF Vectorizer to extract keywords
+vectorizer = TfidfVectorizer(stop_words='english', max_features=50)  # Top 50 skill words
+tfidf_matrix = vectorizer.fit_transform(descriptions)
+
+# Step 5: Get top TF-IDF terms (most in-demand skills)
+feature_names = vectorizer.get_feature_names_out()
+tfidf_scores = tfidf_matrix.sum(axis=0).A1
+skill_scores = dict(zip(feature_names, tfidf_scores))
+
+# Step 6: Sort and display top 15 skills
+sorted_skills = sorted(skill_scores.items(), key=lambda x: x[1], reverse=True)[:15]
+
+print("Top In-Demand Skills (TF-IDF):")
+for skill, score in sorted_skills:
+    print(f"{skill}: {round(score, 2)}")
