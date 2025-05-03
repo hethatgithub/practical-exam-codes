@@ -1,0 +1,47 @@
+# Step 1: Import required libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Step 2: Load the dataset
+# Upload 'Website_traffic_data.csv' from the Kaggle dataset
+df = pd.read_csv('/content/Website_traffic_data.csv')
+
+# Step 3: Preview the dataset
+print("Columns in the dataset:", df.columns)
+df.head()
+
+# Step 4: Filter for two education sites
+# Replace with actual site names from the dataset, for example:
+edu_sites = ['coursera.org', 'udemy.com']
+df_edu = df[df['Domain'].isin(edu_sites)]
+
+# Step 5: Select relevant columns
+df_compare = df_edu[['Domain', 'Total Visits', 'Avg Visit Duration', 'Bounce Rate']].copy()
+
+# Clean data: convert durations to seconds and bounce rate to float
+df_compare['Avg Visit Duration'] = pd.to_timedelta(df_compare['Avg Visit Duration']).dt.total_seconds()
+df_compare['Bounce Rate'] = df_compare['Bounce Rate'].str.replace('%', '').astype(float)
+
+# Step 6: Visualize comparisons
+
+# Total Visits
+plt.figure(figsize=(8, 5))
+sns.barplot(x='Domain', y='Total Visits', data=df_compare)
+plt.title("Total Visits Comparison")
+plt.ylabel("Visits (in millions)")
+plt.show()
+
+# Average Visit Duration
+plt.figure(figsize=(8, 5))
+sns.barplot(x='Domain', y='Avg Visit Duration', data=df_compare)
+plt.title("Average Visit Duration (in seconds)")
+plt.ylabel("Duration (s)")
+plt.show()
+
+# Bounce Rate
+plt.figure(figsize=(8, 5))
+sns.barplot(x='Domain', y='Bounce Rate', data=df_compare)
+plt.title("Bounce Rate Comparison")
+plt.ylabel("Bounce Rate (%)")
+plt.show()
