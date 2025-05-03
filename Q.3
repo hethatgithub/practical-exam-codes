@@ -1,0 +1,29 @@
+# Step 1: Import required libraries
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Step 2: Load the dataset
+df = pd.read_csv("flipkart_com-ecommerce_sample.csv")  # Adjust filename if needed
+
+# Step 3: Select and clean the product description column
+df = df.dropna(subset=["product_description"])
+descriptions = df["product_description"].astype(str).tolist()
+
+# Step 4: Convert descriptions to TF-IDF vectors
+vectorizer = TfidfVectorizer(stop_words='english')
+tfidf_matrix = vectorizer.fit_transform(descriptions)
+
+# Step 5: Compute cosine similarity matrix
+cosine_sim = cosine_similarity(tfidf_matrix)
+
+# Step 6: Find most similar descriptions for a given index
+def get_similar_products(index, top_n=5):
+    similar_indices = cosine_sim[index].argsort()[-top_n-1:-1][::-1]
+    print(f"\nTarget Product:\n{descriptions[index]}\n")
+    print(f"Top {top_n} similar product descriptions:\n")
+    for i in similar_indices:
+        print(f"- {descriptions[i][:150]}...\n")
+
+# Example: Show top 5 products similar to product at index 0
+get_similar_products(0)
