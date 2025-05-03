@@ -1,0 +1,33 @@
+# Step 1: Install necessary libraries
+!pip install -q networkx matplotlib
+
+# Step 2: Import libraries
+import networkx as nx
+import matplotlib.pyplot as plt
+
+# Step 3: Create a synthetic social network
+G = nx.erdos_renyi_graph(n=30, p=0.1, seed=42)  # 30 nodes, 10% chance of edge
+
+# Step 4: Assign random user names as node labels
+for i in G.nodes():
+    G.nodes[i]['name'] = f'User_{i}'
+
+# Step 5: Calculate degree centrality and store it
+centrality = nx.degree_centrality(G)
+nx.set_node_attributes(G, centrality, 'centrality')
+
+# Step 6: Visualize with spring layout
+plt.figure(figsize=(10, 7))
+pos = nx.spring_layout(G, seed=42)
+node_sizes = [v * 1500 for v in centrality.values()]
+
+nx.draw(G, pos, with_labels=True, 
+        labels=nx.get_node_attributes(G, 'name'),
+        node_color=list(centrality.values()),
+        cmap=plt.cm.coolwarm,
+        node_size=node_sizes,
+        edge_color='gray')
+
+plt.title("Synthetic Social Network with Degree Centrality")
+plt.colorbar(plt.cm.ScalarMappable(cmap=plt.cm.coolwarm), label="Centrality")
+plt.show()
