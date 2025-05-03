@@ -1,0 +1,41 @@
+# Install dependencies
+!pip install -q textblob pandas nltk
+import pandas as pd
+from textblob import TextBlob
+import nltk
+nltk.download('punkt')
+
+# Load your Patanjali tweets/reviews dataset
+# Replace this with your actual file path
+df = pd.read_csv('/content/patanjali_tweets.csv')  # Ensure it has a 'text' column
+
+# Drop missing values
+df = df.dropna(subset=['text'])
+
+# Step 1: Analyze sentiment
+def get_sentiment(text):
+    blob = TextBlob(text)
+    return blob.sentiment.polarity  # Ranges from -1 (neg) to +1 (pos)
+
+df['polarity'] = df['text'].apply(get_sentiment)
+
+# Step 2: Extract phrases
+positive_phrases = []
+negative_phrases = []
+
+for text in df['text']:
+    blob = TextBlob(text)
+    for sentence in blob.sentences:
+        if sentence.sentiment.polarity > 0.3:
+            positive_phrases.append(str(sentence))
+        elif sentence.sentiment.polarity < -0.3:
+            negative_phrases.append(str(sentence))
+
+# Step 3: Show top 5 of each
+print("\n🔵 Top Positive Phrases:")
+for phrase in positive_phrases[:5]:
+    print("-", phrase)
+
+print("\n🔴 Top Negative Phrases:")
+for phrase in negative_phrases[:5]:
+    print("-", phrase)
