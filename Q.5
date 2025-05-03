@@ -1,0 +1,30 @@
+# Step 1: Import libraries
+import pandas as pd
+import networkx as nx
+import matplotlib.pyplot as plt
+
+# Step 2: Load the retweet dataset (higgs-retweet_network.edgelist)
+df = pd.read_csv("higgs-retweet_network.edgelist", sep=" ", header=None, names=["source", "target", "timestamp"])
+
+# Step 3: Create a directed graph from retweet edges
+G = nx.DiGraph()
+G.add_edges_from(zip(df["source"], df["target"]))
+
+# Step 4: Compute centrality measures
+in_degree = nx.in_degree_centrality(G)
+pagerank = nx.pagerank(G)
+
+# Step 5: Find top 5 influencers based on PageRank
+top_influencers = sorted(pagerank.items(), key=lambda x: x[1], reverse=True)[:5]
+
+print("Top 5 Influencer Nodes (by PageRank):")
+for node, score in top_influencers:
+    print(f"User {node}: PageRank Score = {round(score, 6)}")
+
+# Step 6: Visualize the graph (optional: show small subgraph for clarity)
+plt.figure(figsize=(10, 7))
+subgraph = G.subgraph(dict(top_influencers).keys())
+nx.draw_networkx(subgraph, with_labels=True, node_color='skyblue', node_size=1000, font_size=10)
+plt.title("Top Influencers Network Graph (Retweets)")
+plt.axis('off')
+plt.show()
