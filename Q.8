@@ -1,0 +1,41 @@
+# Step 1: Import required libraries
+import pandas as pd
+import networkx as nx
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import CountVectorizer
+from itertools import combinations
+import numpy as np
+
+# Step 2: Load the dataset
+df = pd.read_csv("Amazon_Reviews_2018.csv")  # Adjust filename as needed
+
+# Step 3: Preprocess and clean reviews
+df = df.dropna(subset=["reviews.text"])
+reviews = df["reviews.text"].astype(str).tolist()[:1000]  # Limit for speed
+
+# Step 4: Create co-occurrence matrix using CountVectorizer
+vectorizer = CountVectorizer(stop_words="english", max_features=100)
+X = vectorizer.fit_transform(reviews)
+words = vectorizer.get_feature_names_out()
+
+# Compute co-occurrence (word × word matrix)
+Xc = (X.T * X)
+Xc.setdiag(0)  # Remove self-loops
+
+# Step 5: Build graph
+G = nx.from_scipy_sparse_array(Xc)
+
+# Add labels (words) to nodes
+mapping = dict(zip(range(len(words)), words))
+G = nx.relabel_nodes(G, mapping)
+
+# Step 6: Draw the co-occurrence network
+plt.figure(figsize=(12, 9))
+top_nodes = dict(sorted(dict(G.degree()).items(), key=lambda x: x[1], reverse=True)[:30])
+H = G.subgraph(top_nodes)
+pos = nx.spring_layout(H, seed=42)
+
+nx.draw(H, pos, with_labels=True, node_color='lightgreen', node_size=1000, font_size=10, edge_color='gray')
+plt.title("Amazon Review Word Co-occurrence Network")
+plt.axis('off')
+plt.show()
