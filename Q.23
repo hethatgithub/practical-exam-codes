@@ -1,0 +1,41 @@
+import networkx as nx
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Load the built-in Karate Club graph
+G = nx.karate_club_graph()
+
+# Visualize the graph with node labels
+plt.figure(figsize=(10, 6))
+pos = nx.spring_layout(G, seed=42)
+nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=800, font_weight='bold')
+plt.title("Zachary's Karate Club Network")
+plt.show()
+
+# Calculate centralities
+degree_centrality = nx.degree_centrality(G)
+closeness_centrality = nx.closeness_centrality(G)
+betweenness_centrality = nx.betweenness_centrality(G)
+eigenvector_centrality = nx.eigenvector_centrality(G)
+
+# Combine into a DataFrame
+df = pd.DataFrame({
+    'Node': list(G.nodes()),
+    'Degree': [degree_centrality[n] for n in G.nodes()],
+    'Closeness': [closeness_centrality[n] for n in G.nodes()],
+    'Betweenness': [betweenness_centrality[n] for n in G.nodes()],
+    'Eigenvector': [eigenvector_centrality[n] for n in G.nodes()]
+})
+
+# Top 5 nodes by each centrality
+print("\nTop 5 Nodes by Degree Centrality:")
+print(df.sort_values('Degree', ascending=False).head(5))
+
+print("\nTop 5 Nodes by Closeness Centrality:")
+print(df.sort_values('Closeness', ascending=False).head(5))
+
+print("\nTop 5 Nodes by Betweenness Centrality:")
+print(df.sort_values('Betweenness', ascending=False).head(5))
+
+print("\nTop 5 Nodes by Eigenvector Centrality:")
+print(df.sort_values('Eigenvector', ascending=False).head(5))
