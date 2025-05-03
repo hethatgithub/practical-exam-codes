@@ -1,0 +1,49 @@
+Here's a full, exam-ready Python script using NetworkX to:
+
+Load Zachary’s Karate Club network (no need to download — it's built-in),
+
+Apply the Girvan–Newman community detection algorithm, and
+
+Visualize and interpret the community splits.
+
+✅ Community Detection with Girvan–Newman
+python
+Copy
+Edit
+import networkx as nx
+import matplotlib.pyplot as plt
+from networkx.algorithms.community import girvan_newman
+import itertools
+
+# Load the built-in Zachary Karate Club graph
+G = nx.karate_club_graph()
+
+# Apply Girvan–Newman algorithm to find communities
+comp = girvan_newman(G)
+first_level_communities = next(comp)
+communities = [list(c) for c in first_level_communities]
+
+# Print detected communities
+print("Detected Communities:")
+for i, c in enumerate(communities):
+    print(f"Community {i + 1}: {sorted(c)}")
+
+# Visualize the communities
+color_map = {}
+for i, community in enumerate(communities):
+    for node in community:
+        color_map[node] = i
+colors = [color_map[node] for node in G.nodes()]
+
+plt.figure(figsize=(10, 6))
+pos = nx.spring_layout(G, seed=42)
+nx.draw(G, pos, node_color=colors, with_labels=True, cmap=plt.cm.Set3, node_size=800, font_weight='bold')
+plt.title("Zachary's Karate Club - Girvan–Newman Community Detection")
+plt.show()
+🔍 Interpretation of the Split:
+The Girvan–Newman algorithm removes the edges with highest betweenness iteratively.
+
+This mimics how real communities split — by breaking weak or bridging connections.
+
+In Zachary’s club, this mirrors the real split into two groups due to internal conflict between the instructor and administrator.
+
