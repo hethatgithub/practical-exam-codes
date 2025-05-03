@@ -1,0 +1,26 @@
+# Step 1: Import necessary libraries
+import pandas as pd
+import re
+from collections import Counter
+
+# Step 2: Load the dataset
+df = pd.read_csv("covid19_tweets.csv")  # Adjust the filename if needed
+
+# Step 3: Extract hashtags from the tweet text
+def extract_hashtags(text):
+    return re.findall(r"#\w+", str(text).lower())
+
+# Step 4: Apply extraction to all tweets
+all_hashtags = df['text'].apply(extract_hashtags)
+
+# Step 5: Flatten the list of hashtags
+hashtags_flat = [tag for sublist in all_hashtags for tag in sublist]
+
+# Step 6: Count the frequency of each hashtag
+hashtag_counts = Counter(hashtags_flat)
+
+# Step 7: Display the top 10 most common hashtags
+top_hashtags = hashtag_counts.most_common(10)
+print("Top 10 Hashtags:")
+for tag, count in top_hashtags:
+    print(f"{tag}: {count}")
