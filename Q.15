@@ -1,0 +1,67 @@
+# Step 1: Install required libraries
+!pip install -q pandas matplotlib seaborn plotly
+
+# Step 2: Import libraries
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
+
+# Step 3: Load dataset (upload the CSV from Kaggle)
+df = pd.read_csv('/content/clickstream_data.csv')  # Replace with correct filename
+
+# Step 4: Preview data
+df.head()
+
+# Step 5: Basic info
+print("Columns:", df.columns)
+print("\nSample paths:\n", df[['user_id', 'page']].head())
+
+# Step 6: Sort clicks by session
+df = df.sort_values(by=['user_id', 'timestamp'])  # Ensure ordered navigation
+
+# Step 7: Create user session paths
+user_paths = df.groupby('user_id')['page'].apply(lambda x: ' -> '.join(x)).reset_index(name='navigation_path')
+
+# Display example user paths
+print("\nExample navigation paths:")
+print(user_paths.head())
+
+# Step 8: Analyze most common transitions (pairs)
+df['next_page'] = df.groupby('user_id')['page'].shift(-1)
+transitions = df.dropna()[['page', 'next_page']]
+transition_counts = transitions.groupby(['page', 'next_page']).size().reset_index(name='count')
+top_transitions = transition_counts.sort_values('count', ascending=False).head(10)
+
+# Step 9: Plot top navigation transitions
+plt.figure(figsize=(10,6))
+sns.barplot(x='count', y='page', hue='next_page', data=top_transitions)
+plt.title('Top 10 Navigation Transitions Between Pages')
+plt.xlabel('Count')
+plt.ylabel('From Page')
+plt.legend(title='To Page')
+plt.tight_layout()
+plt.show()
+
+# Step 10: Optional - Sankey Diagram for flow
+import plotly.graph_objects as go
+
+# Get top transitions again
+top = top_transitions
+
+# Create label list and index mapping
+labels = list(set(top['page']).union(set(top['next_page'])))
+label_map = {label: idx for idx, label in enumerate(labels)}
+
+# Build sankey source-target-value
+source = top['page'].map(label_map)
+target = top['next_page'].map(label_map)
+value = top['count']
+
+# Sankey diagram
+fig = go.Figure(data=[go.Sankey(
+    node=dict(label=labels, pad=15, thickness=20),
+    link=dict(source=source, target=target, value=value)
+)])
+fig.update_layout(title_text="User Navigation Paths - Sankey Flow", font_size=12)
+fig.show()
