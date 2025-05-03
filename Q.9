@@ -1,0 +1,36 @@
+# Step 1: Import required libraries
+import pandas as pd
+import re
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import classification_report
+
+# Step 2: Load dataset
+df = pd.read_csv("Tweets.csv")  # Adjust filename if needed
+
+# Step 3: Keep relevant columns
+df = df[["text", "airline_sentiment"]]
+
+# Step 4: Preprocess tweets
+def clean_text(text):
+    text = re.sub(r"http\S+|@\S+|#\S+|[^A-Za-z\s]", "", text)
+    return text.lower()
+
+df["clean_text"] = df["text"].apply(clean_text)
+
+# Step 5: Split into train/test sets
+X_train, X_test, y_train, y_test = train_test_split(df["clean_text"], df["airline_sentiment"], test_size=0.2, random_state=42)
+
+# Step 6: Convert text to TF-IDF features
+vectorizer = TfidfVectorizer(stop_words="english", max_features=3000)
+X_train_tfidf = vectorizer.fit_transform(X_train)
+X_test_tfidf = vectorizer.transform(X_test)
+
+# Step 7: Train a Naive Bayes classifier
+model = MultinomialNB()
+model.fit(X_train_tfidf, y_train)
+
+# Step 8: Predict and evaluate
+y_pred = model.predict(X_test_tfidf)
+print(classification_report(y_test, y_pred))
