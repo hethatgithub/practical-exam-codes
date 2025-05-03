@@ -1,0 +1,48 @@
+# Install required library
+!pip install -q textblob
+
+# Import libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from textblob import TextBlob
+
+# Load dataset
+df = pd.read_csv('/content/Brand_sentiment_analysis.csv')  # Make sure this file is uploaded
+
+# Filter only Patanjali and HUL tweets
+df = df[df['brand'].isin(['Patanjali', 'HUL'])]
+
+# Drop missing values
+df = df.dropna(subset=['text'])
+
+# Function to compute polarity
+def get_sentiment(text):
+    return TextBlob(text).sentiment.polarity
+
+# Apply sentiment analysis
+df['polarity'] = df['text'].apply(get_sentiment)
+
+# Categorize sentiment
+def classify_sentiment(score):
+    if score > 0.05:
+        return 'Positive'
+    elif score < -0.05:
+        return 'Negative'
+    else:
+        return 'Neutral'
+
+df['sentiment'] = df['polarity'].apply(classify_sentiment)
+
+# Visualize sentiment distribution
+plt.figure(figsize=(10,6))
+sns.countplot(data=df, x='sentiment', hue='brand', palette='Set2')
+plt.title("Comparative Sentiment Analysis: Patanjali vs HUL")
+plt.xlabel("Sentiment")
+plt.ylabel("Number of Tweets")
+plt.legend(title='Brand')
+plt.show()
+
+# Print average polarity for both brands
+avg_polarity = df.groupby('brand')['polarity'].mean()
+print("Average Polarity Score:\n", avg_polarity)
