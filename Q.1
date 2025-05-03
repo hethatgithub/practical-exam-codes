@@ -1,4 +1,3 @@
-1.
 # Step 1: Import necessary libraries
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -6,28 +5,33 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score
 
-# Step 2: Load the dataset
-data = pd.read_csv("SMSSpamCollection", sep="\t", header=None, names=["label", "message"])
+# Step 2: Load the dataset from spam.csv
+df = pd.read_csv('/content/spam.csv', encoding='latin-1')
+
+# Keep only relevant columns (usually 'v1' and 'v2') and rename them
+df = df[['v1', 'v2']]
+df.columns = ['label', 'message']
 
 # Step 3: Convert labels to numbers (ham = 0, spam = 1)
-data["label_num"] = data["label"].map({"ham": 0, "spam": 1})
+df["label_num"] = df["label"].map({"ham": 0, "spam": 1})
 
-# Step 4: Split the dataset into training and testing sets
+# Step 4: Split into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(
-    data["message"], data["label_num"], test_size=0.2, random_state=42)
+    df["message"], df["label_num"], test_size=0.2, random_state=42)
 
-# Step 5: Convert text data to TF-IDF features
+# Step 5: TF-IDF vectorization
 vectorizer = TfidfVectorizer()
 X_train_tfidf = vectorizer.fit_transform(X_train)
 X_test_tfidf = vectorizer.transform(X_test)
 
-# Step 6: Train the Naive Bayes classifier
+# Step 6: Train Naive Bayes model
 model = MultinomialNB()
 model.fit(X_train_tfidf, y_train)
 
-# Step 7: Predict and check accuracy
+# Step 7: Predict & evaluate
 y_pred = model.predict(X_test_tfidf)
 accuracy = accuracy_score(y_test, y_pred)
 
-# Step 8: Print the result
+# Step 8: Display accuracy
 print("Accuracy of Spam Classifier:", round(accuracy * 100, 2), "%")
+
