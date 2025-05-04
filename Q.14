@@ -45,3 +45,28 @@ sns.barplot(x='Domain', y='Bounce Rate', data=df_compare)
 plt.title("Bounce Rate Comparison")
 plt.ylabel("Bounce Rate (%)")
 plt.show()
+
+
+##
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv('/content/traffic.csv')
+
+# Convert to datetime correctly
+df['Date'] = pd.to_datetime(df['Date'], format='mixed')
+
+# Plot
+plt.figure(figsize=(10, 5))
+plt.plot(df['Date'], df['Visits'], marker='o')
+plt.title("Website Visits Over Time")
+plt.xlabel("Date")
+plt.ylabel("Visits")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.grid(True)
+plt.show()
+
+
+
+
